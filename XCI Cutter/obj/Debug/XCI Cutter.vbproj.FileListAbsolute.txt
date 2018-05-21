@@ -1,0 +1,12 @@
+C:\Users\Destiny\AppData\Local\Temporary Projects\XCI Cutter\bin\Debug\XCI Cutter.exe.config
+C:\Users\Destiny\Documents\Visual Studio 2015\Projects\XCI Cutter\XCI Cutter\bin\Debug\XCI Cutter.exe.config
+C:\Users\Destiny\Documents\Visual Studio 2015\Projects\XCI Cutter\XCI Cutter\bin\Debug\XCI Cutter.exe
+C:\Users\Destiny\Documents\Visual Studio 2015\Projects\XCI Cutter\XCI Cutter\bin\Debug\XCI Cutter.pdb
+C:\Users\Destiny\Documents\Visual Studio 2015\Projects\XCI Cutter\XCI Cutter\bin\Debug\XCI Cutter.xml
+C:\Users\Destiny\Documents\Visual Studio 2015\Projects\XCI Cutter\XCI Cutter\obj\Debug\XCI Cutter.vbprojResolveAssemblyReference.cache
+C:\Users\Destiny\Documents\Visual Studio 2015\Projects\XCI Cutter\XCI Cutter\obj\Debug\XCI_Cutter.Resources.resources
+C:\Users\Destiny\Documents\Visual Studio 2015\Projects\XCI Cutter\XCI Cutter\obj\Debug\XCI_Cutter.frmXCIcutter.resources
+C:\Users\Destiny\Documents\Visual Studio 2015\Projects\XCI Cutter\XCI Cutter\obj\Debug\XCI Cutter.vbproj.GenerateResource.Cache
+C:\Users\Destiny\Documents\Visual Studio 2015\Projects\XCI Cutter\XCI Cutter\obj\Debug\XCI Cutter.exe
+C:\Users\Destiny\Documents\Visual Studio 2015\Projects\XCI Cutter\XCI Cutter\obj\Debug\XCI Cutter.xml
+C:\Users\Destiny\Documents\Visual Studio 2015\Projects\XCI Cutter\XCI Cutter\obj\Debug\XCI Cutter.pdb
