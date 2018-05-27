@@ -3,23 +3,19 @@ Imports System.IO
 
 Public Class frmXCIcutter
     Friend CurrentFile As XCIFile
-    Dim BatchForm As frmBatch
+    Friend BatchForm As frmBatch
 
     'Source-file dialog: Create XCIFile instance by dialog / call DisplaySizes()
     Private Sub btnSourceDialog_Click(sender As Object, e As EventArgs) Handles btnSourceDialog.Click
         If OpenFileDialog1.ShowDialog = DialogResult.OK Then
-            Try
-                CurrentFile = New XCIFile(OpenFileDialog1.FileName)
-                txtSourcePath.Text = OpenFileDialog1.FileName
-                If rdbCut.Checked = True Then
-                    SaveFileDialog1.FileName = Path.GetFileNameWithoutExtension(OpenFileDialog1.FileName) & "-cut"
-                Else
-                    SaveFileDialog1.FileName = Path.GetFileNameWithoutExtension(OpenFileDialog1.FileName) & "-uncut"
-                End If
-                DisplaySizes(CurrentFile)
-            Catch ex As Exception
-                MessageBox.Show(ex.Message)
-            End Try
+            CurrentFile = New XCIFile(OpenFileDialog1.FileName)
+            txtSourcePath.Text = OpenFileDialog1.FileName
+            If rdbCut.Checked = True Then
+                SaveFileDialog1.FileName = Path.GetFileNameWithoutExtension(OpenFileDialog1.FileName) & "-cut"
+            Else
+                SaveFileDialog1.FileName = Path.GetFileNameWithoutExtension(OpenFileDialog1.FileName) & "-uncut"
+            End If
+            DisplaySizes(CurrentFile)
         End If
     End Sub
 
@@ -67,7 +63,10 @@ Public Class frmXCIcutter
     'btnCut_Click(): Check wether current size and target size differ / start backgroundworker & progressbar
     Private Sub btnCut_Click(sender As Object, e As EventArgs) Handles btnCut.Click
         If IsNothing(CurrentFile) Then
-            MessageBox.Show("Please specify an Inputfile!", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            MessageBox.Show("Please specify an inputfile!", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Warning)
+            Exit Sub
+        ElseIf CurrentFile.FileOK = False Then
+            MessageBox.Show("There was a problem with your inputfile!", "Error!", MessageBoxButtons.OK, MessageBoxIcon.Warning)
             Exit Sub
         Else
             If rdbCut.Checked Then
@@ -106,6 +105,7 @@ Public Class frmXCIcutter
         End If
     End Sub
 
+    'Disable and re-enable controls
     Friend Sub ToggleControls(Trigger As Boolean)
         rdbCut.Enabled = Trigger
         rdbUncut.Enabled = Trigger
@@ -127,10 +127,12 @@ Public Class frmXCIcutter
 
     End Sub
 
+    'Backgoundworker: All reading/writing happens here
     Private Sub BackgroundWorker_DoWork(sender As Object, e As DoWorkEventArgs) Handles BackgroundWorker.DoWork
         CurrentFile.OpenReaders()
         BackgroundWorker.WorkerSupportsCancellation = True
         ProgressBar.Value = 0
+        If Not IsNothing(BatchForm) Then BatchForm.prgCurrent.Value = ProgressBar.Value
         'Cut / Split
         If rdbCut.Checked = True Then
             'jump to DataSíze
@@ -257,16 +259,16 @@ Public Class frmXCIcutter
         Select Case e.ProgressPercentage
             Case 1
                 lblStatus.Text = "Checking space after gamedata ..."
-                BatchForm.lblCurrent.Text = "Checking space after gamedata ..."
+                If Not IsNothing(BatchForm) Then BatchForm.lblCurrent.Text = "Checking space after gamedata ..."
             Case 2
                 lblStatus.Text = "Copying gamedata to new file ..."
-                BatchForm.lblCurrent.Text = "Copying gamedata to new file ..."
+                If Not IsNothing(BatchForm) Then BatchForm.lblCurrent.Text = "Copying gamedata to new file ..."
             Case 3
                 lblStatus.Text = "Appending unused sectors after gamedata ..."
-                BatchForm.lblCurrent.Text = "Appending unused sectors after gamedata ..."
+                If Not IsNothing(BatchForm) Then BatchForm.lblCurrent.Text = "Appending unused sectors after gamedata ..."
             Case 10 To 29
                 lblStatus.Text = "Copying gamedata to new files ..." & " Part " & e.ProgressPercentage - 10 & " of " & CurrentFile.ChunkCount
-                BatchForm.lblCurrent.Text = "Copying gamedata to new files ..." & " Part " & e.ProgressPercentage - 10 & " of " & CurrentFile.ChunkCount
+                If Not IsNothing(BatchForm) Then BatchForm.lblCurrent.Text = "Copying gamedata to new files ..." & " Part " & e.ProgressPercentage - 10 & " of " & CurrentFile.ChunkCount
             Case >= 30
                 'Error-Codes for BatchForm
                 '30: Found unusual bytes after gamedata
@@ -274,8 +276,8 @@ Public Class frmXCIcutter
                 '32: Error while writing gamedata (Cut-Mode)
                 '33: Error while writing gamedata (Uncut-Mode)
                 '34: Error while restoring unused sectors
-                BatchForm.lstFilelist.Items(BatchForm.CurrentIndex) = "ERR" & e.ProgressPercentage & BatchForm.lstFilelist.Items(BatchForm.CurrentIndex).ToString.TrimStart("ACTIVE".ToCharArray)
-                BatchForm.StartNext(False)
+                If Not IsNothing(BatchForm) Then BatchForm.lstFilelist.Items(BatchForm.CurrentIndex) = "ERR" & e.ProgressPercentage & BatchForm.lstFilelist.Items(BatchForm.CurrentIndex).ToString.TrimStart("ACTIVE".ToCharArray)
+                If Not IsNothing(BatchForm) Then BatchForm.StartNext(False)
         End Select
     End Sub
 
@@ -283,19 +285,17 @@ Public Class frmXCIcutter
     Private Sub BackgroundWorker_RunWorkerCompleted(sender As Object, e As RunWorkerCompletedEventArgs) Handles BackgroundWorker.RunWorkerCompleted
         progressTimer.Stop()
         lblStatus.Text = ""
-        ProgressBar.Value = 0
         ToggleControls(True)
+        CurrentFile.CloseReaders()
         If e.Cancelled = False Then
-            ProgressBar.Value = 100
-            CurrentFile.CloseReaders()
             If Not IsNothing(BatchForm) Then
-                ProgressBar.Value = 0
+                BatchForm.prgCurrent.Value = 100
                 BatchForm.StartNext(True)
             Else
+                ProgressBar.Value = 100
                 MessageBox.Show("Your XCI-file was saved successfully!", "Completed!", MessageBoxButtons.OK, MessageBoxIcon.Information)
             End If
         Else
-            CurrentFile.CloseReaders()
             'delete incomplete files
             If File.Exists(CurrentFile.OutPath) Then
                 Dim lastchunk As String = CurrentFile.OutPath.Substring(CurrentFile.OutPath.Length - 1)
@@ -308,6 +308,7 @@ Public Class frmXCIcutter
                 End If
             End If
         End If
+        ProgressBar.Value = 0
     End Sub
 
     'Exit button
@@ -347,8 +348,10 @@ Public Class frmXCIcutter
     Private Sub btnShowBatch_Click(sender As Object, e As EventArgs) Handles btnShowBatch.Click
         BatchForm = New frmBatch
         BatchForm.ShowDialog()
+        BatchForm = Nothing
     End Sub
 
+    'Set allowed file extensions for SaveFileDialog depending on whether splitting was selected
     Private Sub chkSplit_CheckedChanged(sender As Object, e As EventArgs) Handles chkSplit.CheckedChanged
         If chkSplit.Checked = True Then
             SaveFileDialog1.Filter = "Split-XCI-File|*.xc0|all Files|*.*"
@@ -362,6 +365,7 @@ Public Class frmXCIcutter
             End If
         End If
     End Sub
+
 End Class
 
 'Seperate Class for XCIFile Objects, making it more convenient to handle from different forms/procedures
@@ -370,11 +374,17 @@ Friend Class XCIFile
     Private OutfileStream As FileStream
     Private pDataSize, pCartSize, pRealfileSize As UInt64
     Private pInPath, pOutPath As String
+    Private pFileOK As Boolean = True
     Friend ReadOnly ChunkSize As UInt32 = 4 * 1024 ^ 3 - 1
     Private pChunkCount As Byte
     Friend br As BinaryReader
     Friend bw As BinaryWriter
 
+    Public ReadOnly Property FileOK As Boolean
+        Get
+            Return pFileOK
+        End Get
+    End Property
     Public Property OutPath As String
         Get
             Return pOutPath
@@ -461,42 +471,54 @@ Friend Class XCIFile
     End Sub
 
     Private Sub ReadSizes()
-        OpenReaders()
-        InfileStream.Position = 269
-        Select Case br.ReadByte
-            Case 248
-                pCartSize = 1904
-            Case 240
-                pCartSize = 3808
-            Case 224
-                pCartSize = 7616
-            Case 225
-                pCartSize = 15232
-            Case 226
-                pCartSize = 30464
-            Case Else
-                MessageBox.Show("The source file doesn't look like an XCI file", "Can't determine cartridge size!")
+        Try
+            OpenReaders()
+            InfileStream.Position = 269
+            Select Case br.ReadByte
+                Case 248
+                    pCartSize = 1904
+                Case 240
+                    pCartSize = 3808
+                Case 224
+                    pCartSize = 7616
+                Case 225
+                    pCartSize = 15232
+                Case 226
+                    pCartSize = 30464
+                Case Else
+                    If IsNothing(frmXCIcutter.BatchForm) Then MessageBox.Show("The source file doesn't look like an XCI file", "Can't determine cartridge size!")
+                    pFileOK = False
+                    Exit Sub
+            End Select
+            InfileStream.Position = 280
+            pDataSize = 512 + (BitConverter.ToUInt32(br.ReadBytes(4), 0) * 512)
+            pChunkCount = pDataSize \ ChunkSize + 1
+            pRealfileSize = InfileStream.Length
+            If InPath.EndsWith(".xc0") Then
+                For n As Byte = 1 To ChunkCount - 1
+                    Try
+                        pRealfileSize = pRealfileSize + FileLen(InPath.TrimEnd(0.ToString) & n.ToString)
+                    Catch ex As Exception
+                        If IsNothing(frmXCIcutter.BatchForm) Then MessageBox.Show(ex.Message)
+                        If IsNothing(frmXCIcutter.BatchForm) Then MessageBox.Show("Make sure that all parts of the dump are accessible.", "Dump incomplete!")
+                        pFileOK = False
+                    End Try
+                Next
+            Else
+            End If
+            If pRealfileSize < 32 * 1024 Then
+                If IsNothing(frmXCIcutter.BatchForm) Then MessageBox.Show("The source file doesn't look like an XCI file", "File to small!")
+                pFileOK = False
                 Exit Sub
-        End Select
-        InfileStream.Position = 280
-        pDataSize = 512 + (BitConverter.ToUInt32(br.ReadBytes(4), 0) * 512)
-        pChunkCount = pDataSize \ ChunkSize + 1
-        pRealfileSize = InfileStream.Length
-        If InPath.EndsWith(".xc0") Then
-            For n As Byte = 1 To ChunkCount - 1
-                Try
-                    pRealfileSize = pRealfileSize + FileLen(InPath.TrimEnd(0.ToString) & n.ToString)
-                Catch ex As Exception
-                    MessageBox.Show(ex.Message)
-                    MessageBox.Show("Make sure that all parts of the dump are accessible.", "Dump incomplete!")
-                End Try
-            Next
-        Else
-        End If
-        If pRealfileSize < 32 * 1024 Then
-            MessageBox.Show("The source file doesn't look like an XCI file", "File to small!")
-            Exit Sub
-        End If
-        CloseReaders()
+            End If
+            CloseReaders()
+        Catch ex As Exception
+            If IsNothing(frmXCIcutter.BatchForm) Then MessageBox.Show(ex.Message)
+            pFileOK = False
+            pDataSize = 0
+            pCartSize = 0
+            pRealfileSize = 0
+            pChunkCount = 0
+        End Try
     End Sub
 End Class

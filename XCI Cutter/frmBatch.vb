@@ -4,7 +4,7 @@ Imports System.IO
 Public Class frmBatch
     Friend CurrentIndex As Integer
 
-    'opens frmXCIcutter.OpenFileDialog1 but with multiselect enabled
+    'Open frmXCIcutter.OpenFileDialog1 but with multiselect enabled
     Private Sub btnAddFiles_Click(sender As Object, e As EventArgs) Handles btnAddFiles.Click
         frmXCIcutter.OpenFileDialog1.Multiselect = True
         If frmXCIcutter.OpenFileDialog1.ShowDialog = DialogResult.OK Then
@@ -13,7 +13,7 @@ Public Class frmBatch
         frmXCIcutter.OpenFileDialog1.Multiselect = False
     End Sub
 
-    'Adds files to list if not yet listed
+    'Add files to list if not yet listed
     Private Sub AddToList(FileBuffer() As String)
         For i As Integer = 0 To FileBuffer.GetUpperBound(0)
             For n As Integer = 0 To lstFilelist.Items.Count - 1
@@ -26,7 +26,7 @@ Public Class frmBatch
         Next
     End Sub
 
-    'detect DEL-Key to remove items
+    'Detect DEL-Key to remove items
     Private Sub lstFilelist_KeyDown(sender As Object, e As KeyEventArgs) Handles lstFilelist.KeyDown
         If e.KeyCode = Keys.Delete Then
             For i As Integer = lstFilelist.SelectedIndices.Count - 1 To 0 Step -1
@@ -40,7 +40,7 @@ Public Class frmBatch
         If lstFilelist.Items.Count > 0 Then
             e.DrawBackground()
             If (e.State And DrawItemState.Selected) = DrawItemState.Selected Then
-                e.Graphics.FillRectangle(Brushes.LightBlue, e.Bounds)
+                e.Graphics.FillRectangle(Brushes.Yellow, e.Bounds)
             Else
                 If lstFilelist.Items(e.Index).ToString().StartsWith("OK!") Then
                     e.Graphics.FillRectangle(Brushes.LightGreen, e.Bounds)
@@ -59,7 +59,7 @@ Public Class frmBatch
         End If
     End Sub
 
-    'prepare input and ouput / several conditions to skip files / call backgroundworker
+    'Prepare input and ouput / several conditions to skip files / call backgroundworker
     Private Sub StartConversion()
         'reset progressbar
         prgCurrent.Value = 0
@@ -76,6 +76,12 @@ Public Class frmBatch
         End If
 
         frmXCIcutter.CurrentFile = New XCIFile(lstFilelist.Items(CurrentIndex))
+        'skip if inputfile is no valid xci-file (mark as error 35)
+        If frmXCIcutter.CurrentFile.FileOK = False Then
+            lstFilelist.Items(CurrentIndex) = "ERR35" & vbTab & lstFilelist.Items(CurrentIndex)
+            StartNext(False)
+            Exit Sub
+        End If
 
         If rdbCut.Checked Then
             ' Skip files when file was already trimmed and ...
@@ -114,21 +120,22 @@ Public Class frmBatch
         frmXCIcutter.BackgroundWorker.RunWorkerAsync()
     End Sub
 
-    'cleanup last file / set index to next file / show message if finished
+    'Cleanup last file / set index to next file / show message if finished
     Friend Sub StartNext(PreviousOK As Boolean)
         prgTotal.Value = 100 / lstFilelist.Items.Count * (CurrentIndex + 1)
         If PreviousOK Then
-            'Mark last item as OK!
-            lstFilelist.Items(CurrentIndex) = "OK!" & lstFilelist.Items(CurrentIndex).ToString.TrimStart("ACTIVE".ToCharArray)
             'Delete source file(s)
             If chkDelete.Checked Then
-                If frmXCIcutter.CurrentFile.InPath.EndsWith(".xc0") Then
-                    For i As Byte = 1 To frmXCIcutter.CurrentFile.ChunkCount - 1
-                        File.Delete(frmXCIcutter.CurrentFile.InPath.TrimEnd((i - 1).ToString) & i)
+                If frmXCIcutter.CurrentFile.InPath.EndsWith(".xci") Then
+                    File.Delete(frmXCIcutter.CurrentFile.InPath)
+                Else
+                    For n As SByte = 0 To frmXCIcutter.CurrentFile.ChunkCount - 1
+                        File.Delete(frmXCIcutter.CurrentFile.InPath.Substring(0, frmXCIcutter.CurrentFile.InPath.Length - 1) & n.ToString)
                     Next
                 End If
-                File.Delete(frmXCIcutter.CurrentFile.InPath)
-            End If
+        End If
+            'Mark last item as OK!
+            lstFilelist.Items(CurrentIndex) = "OK!" & lstFilelist.Items(CurrentIndex).ToString.TrimStart("ACTIVE".ToCharArray)
         End If
         'if there are more entries on the list: start next
         If CurrentIndex < lstFilelist.Items.Count - 1 Then
@@ -136,11 +143,12 @@ Public Class frmBatch
             StartConversion()
         Else
             'finished last entry: show message and cleanup
-            MessageBox.Show("Processed all files.", "Finished!", MessageBoxButtons.OK, MessageBoxIcon.Information)
             ToggleControls(True)
+            MessageBox.Show("Processed all files.", "Finished!", MessageBoxButtons.OK, MessageBoxIcon.Information)
+            lblTotal.Text = ""
             lblCurrent.Text = ""
-            prgCurrent.Value = 0
             prgTotal.Value = 0
+            prgCurrent.Value = 0
             CurrentIndex = 0
         End If
     End Sub
@@ -159,6 +167,7 @@ Public Class frmBatch
                     ToggleControls(True)
                     lblCurrent.Text = ""
                     prgCurrent.Value = 0
+                    lblTotal.Text = ""
                     prgTotal.Value = 0
                     lstFilelist.Items(CurrentIndex) = frmXCIcutter.CurrentFile.InPath
                     CurrentIndex = 0
@@ -177,7 +186,6 @@ Public Class frmBatch
         rdbUncut.Enabled = Trigger
         chkSplit.Enabled = Trigger
         chkDelete.Enabled = Trigger
-        lblTotal.Text = ""
         If Trigger Then
             btnStartBatch.Text = "Start"
         Else
@@ -185,17 +193,25 @@ Public Class frmBatch
         End If
     End Sub
 
-    'actually the conversion is handled by frmXCIcutter
-    'we need to copy the selected parameters from batchform to frmXCIcutter
+    'Actually the conversion is handled by frmXCIcutter
+    'We need to copy the selected parameters from batchform to frmXCIcutter
     Private Sub rdbUncut_CheckedChanged(sender As Object, e As EventArgs) Handles rdbUncut.CheckedChanged, rdbCut.CheckedChanged
         frmXCIcutter.rdbCut.Checked = rdbCut.Checked
         frmXCIcutter.rdbUncut.Checked = rdbUncut.Checked
+        If rdbCut.Checked Then
+            chkSplit.Enabled = True
+        Else
+            'The split-checkbox is always ignored in mode uncut/join
+            'but nevertheless disable the control to avoid confusion
+            chkSplit.Enabled = False
+            chkSplit.Checked = False
+        End If
     End Sub
     Private Sub chkSplit_CheckedChanged(sender As Object, e As EventArgs) Handles chkSplit.CheckedChanged
         frmXCIcutter.chkSplit.Checked = chkSplit.Checked
     End Sub
 
-    'hide frmXCIcutter while BatchForm is open
+    'Hide frmXCIcutter while BatchForm is open
     Private Sub frmBatch_Load(sender As Object, e As EventArgs) Handles Me.Load
         chkSplit.Checked = frmXCIcutter.chkSplit.Checked
         frmXCIcutter.Hide()
@@ -215,8 +231,9 @@ Public Class frmBatch
         End If
     End Sub
 
-    'show frmXCIcutter
+    'Show frmXCIcutter after closing frmBatch
     Private Sub frmBatch_Closed(sender As Object, e As EventArgs) Handles Me.Closed
         frmXCIcutter.Show()
+        Me.Dispose()
     End Sub
 End Class
