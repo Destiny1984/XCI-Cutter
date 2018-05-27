@@ -61,6 +61,8 @@ Public Class frmBatch
 
     'prepare input and ouput / several conditions to skip files / call backgroundworker
     Private Sub StartConversion()
+        'reset progressbar
+        prgCurrent.Value = 0
         'show number of file
         lblTotal.Text = "File " & CurrentIndex + 1 & " of " & lstFilelist.Items.Count
         'check if a previous backgroundworker is still running and let it finish

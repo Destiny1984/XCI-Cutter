@@ -298,11 +298,11 @@ Public Class frmXCIcutter
             CurrentFile.CloseReaders()
             'delete incomplete files
             If File.Exists(CurrentFile.OutPath) Then
-                Dim lastchunk As Char = CurrentFile.OutPath.Substring(CurrentFile.OutPath.Length - 1)
+                Dim lastchunk As String = CurrentFile.OutPath.Substring(CurrentFile.OutPath.Length - 1)
                 If lastchunk = "i" Then
                     File.Delete(CurrentFile.OutPath)
                 Else
-                    For n As SByte = Asc(lastchunk) To 0 Step -1
+                    For n As SByte = CInt(lastchunk) To 0 Step -1
                         File.Delete(CurrentFile.OutPath.TrimEnd(lastchunk.ToString) & n.ToString)
                     Next
                 End If
@@ -450,6 +450,8 @@ Friend Class XCIFile
     Friend Sub CloseReaders()
         If Not IsNothing(br) AndAlso Not IsNothing(br.BaseStream) Then br.Close()
         If Not IsNothing(bw) AndAlso Not IsNothing(bw.BaseStream) Then bw.Close()
+        'run garbage collector to free resources/unlock files
+        GC.Collect()
     End Sub
 
     Sub New(InPath As String, Optional OutPath As String = Nothing)
