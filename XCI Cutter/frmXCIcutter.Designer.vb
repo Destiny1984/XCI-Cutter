@@ -43,6 +43,7 @@ Partial Class frmXCIcutter
         Me.lblMode = New System.Windows.Forms.Label()
         Me.rdbCut = New System.Windows.Forms.RadioButton()
         Me.rdbUncut = New System.Windows.Forms.RadioButton()
+        Me.btnShowBatch = New System.Windows.Forms.Button()
         Me.chkSplit = New System.Windows.Forms.CheckBox()
         Me.lblXCIsize = New System.Windows.Forms.Label()
         Me.txtXCIsize = New System.Windows.Forms.TextBox()
@@ -94,7 +95,7 @@ Partial Class frmXCIcutter
         '
         'btnCut
         '
-        Me.btnCut.Location = New System.Drawing.Point(237, 211)
+        Me.btnCut.Location = New System.Drawing.Point(237, 210)
         Me.btnCut.Margin = New System.Windows.Forms.Padding(3, 2, 3, 2)
         Me.btnCut.Name = "btnCut"
         Me.btnCut.Size = New System.Drawing.Size(169, 55)
@@ -104,7 +105,7 @@ Partial Class frmXCIcutter
         '
         'btnExit
         '
-        Me.btnExit.Location = New System.Drawing.Point(419, 211)
+        Me.btnExit.Location = New System.Drawing.Point(419, 210)
         Me.btnExit.Margin = New System.Windows.Forms.Padding(3, 2, 3, 2)
         Me.btnExit.Name = "btnExit"
         Me.btnExit.Size = New System.Drawing.Size(169, 55)
@@ -142,7 +143,7 @@ Partial Class frmXCIcutter
         'txtDataSize
         '
         Me.txtDataSize.Enabled = False
-        Me.txtDataSize.Location = New System.Drawing.Point(117, 211)
+        Me.txtDataSize.Location = New System.Drawing.Point(117, 210)
         Me.txtDataSize.Margin = New System.Windows.Forms.Padding(3, 2, 3, 2)
         Me.txtDataSize.Name = "txtDataSize"
         Me.txtDataSize.Size = New System.Drawing.Size(100, 22)
@@ -180,7 +181,7 @@ Partial Class frmXCIcutter
         'lblMode
         '
         Me.lblMode.AutoSize = True
-        Me.lblMode.Location = New System.Drawing.Point(152, 34)
+        Me.lblMode.Location = New System.Drawing.Point(111, 34)
         Me.lblMode.Margin = New System.Windows.Forms.Padding(4, 0, 4, 0)
         Me.lblMode.Name = "lblMode"
         Me.lblMode.Size = New System.Drawing.Size(47, 17)
@@ -191,32 +192,42 @@ Partial Class frmXCIcutter
         '
         Me.rdbCut.AutoSize = True
         Me.rdbCut.Checked = True
-        Me.rdbCut.Location = New System.Drawing.Point(224, 32)
-        Me.rdbCut.Margin = New System.Windows.Forms.Padding(4)
+        Me.rdbCut.Location = New System.Drawing.Point(183, 32)
+        Me.rdbCut.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.rdbCut.Name = "rdbCut"
-        Me.rdbCut.Size = New System.Drawing.Size(96, 21)
+        Me.rdbCut.Size = New System.Drawing.Size(89, 21)
         Me.rdbCut.TabIndex = 13
         Me.rdbCut.TabStop = True
-        Me.rdbCut.Text = "Trim / Split"
+        Me.rdbCut.Text = "Cut / Split"
         Me.rdbCut.UseVisualStyleBackColor = True
         '
         'rdbUncut
         '
         Me.rdbUncut.AutoSize = True
-        Me.rdbUncut.Location = New System.Drawing.Point(337, 32)
-        Me.rdbUncut.Margin = New System.Windows.Forms.Padding(4)
+        Me.rdbUncut.Location = New System.Drawing.Point(296, 32)
+        Me.rdbUncut.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.rdbUncut.Name = "rdbUncut"
-        Me.rdbUncut.Size = New System.Drawing.Size(108, 21)
+        Me.rdbUncut.Size = New System.Drawing.Size(104, 21)
         Me.rdbUncut.TabIndex = 14
-        Me.rdbUncut.Text = "Untrim / Join"
+        Me.rdbUncut.Text = "Uncut / Join"
         Me.rdbUncut.UseVisualStyleBackColor = True
+        '
+        'btnShowBatch
+        '
+        Me.btnShowBatch.Location = New System.Drawing.Point(421, 28)
+        Me.btnShowBatch.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
+        Me.btnShowBatch.Name = "btnShowBatch"
+        Me.btnShowBatch.Size = New System.Drawing.Size(167, 28)
+        Me.btnShowBatch.TabIndex = 15
+        Me.btnShowBatch.Text = "Batch processing"
+        Me.btnShowBatch.UseVisualStyleBackColor = True
         '
         'chkSplit
         '
         Me.chkSplit.AutoSize = True
         Me.chkSplit.Enabled = False
-        Me.chkSplit.Location = New System.Drawing.Point(448, 173)
-        Me.chkSplit.Margin = New System.Windows.Forms.Padding(4)
+        Me.chkSplit.Location = New System.Drawing.Point(448, 174)
+        Me.chkSplit.Margin = New System.Windows.Forms.Padding(4, 4, 4, 4)
         Me.chkSplit.Name = "chkSplit"
         Me.chkSplit.Size = New System.Drawing.Size(141, 21)
         Me.chkSplit.TabIndex = 16
@@ -226,7 +237,7 @@ Partial Class frmXCIcutter
         'lblXCIsize
         '
         Me.lblXCIsize.AutoSize = True
-        Me.lblXCIsize.Location = New System.Drawing.Point(12, 245)
+        Me.lblXCIsize.Location = New System.Drawing.Point(12, 244)
         Me.lblXCIsize.Name = "lblXCIsize"
         Me.lblXCIsize.Size = New System.Drawing.Size(85, 17)
         Me.lblXCIsize.TabIndex = 17
@@ -235,7 +246,7 @@ Partial Class frmXCIcutter
         'txtXCIsize
         '
         Me.txtXCIsize.Enabled = False
-        Me.txtXCIsize.Location = New System.Drawing.Point(117, 242)
+        Me.txtXCIsize.Location = New System.Drawing.Point(117, 241)
         Me.txtXCIsize.Margin = New System.Windows.Forms.Padding(3, 2, 3, 2)
         Me.txtXCIsize.Name = "txtXCIsize"
         Me.txtXCIsize.Size = New System.Drawing.Size(100, 22)
@@ -249,6 +260,7 @@ Partial Class frmXCIcutter
         Me.Controls.Add(Me.txtXCIsize)
         Me.Controls.Add(Me.lblXCIsize)
         Me.Controls.Add(Me.chkSplit)
+        Me.Controls.Add(Me.btnShowBatch)
         Me.Controls.Add(Me.rdbUncut)
         Me.Controls.Add(Me.rdbCut)
         Me.Controls.Add(Me.lblMode)
@@ -294,6 +306,7 @@ Partial Class frmXCIcutter
     Friend WithEvents lblMode As Label
     Friend WithEvents rdbCut As RadioButton
     Friend WithEvents rdbUncut As RadioButton
+    Friend WithEvents btnShowBatch As Button
     Friend WithEvents chkSplit As CheckBox
     Friend WithEvents lblXCIsize As Label
     Friend WithEvents txtXCIsize As TextBox
