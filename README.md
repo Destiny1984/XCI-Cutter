@@ -13,3 +13,6 @@ The tool can be used to add back the unused space.
 
 As a safetymeasure, the original file actually won't be touched.
 Everything gets copied to an output file.
+
+# Edit
+In this version I added a recursive folder search under batch processing
