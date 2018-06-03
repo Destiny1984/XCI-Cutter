@@ -236,4 +236,24 @@ Public Class frmBatch
         frmXCIcutter.Show()
         Me.Dispose()
     End Sub
+
+    '@rapidraid: Added an AddFolder button. Searches for all xci/xc0 files recursively'
+    Private Sub btnAddFolder_Click(sender As Object, e As EventArgs) Handles btnAddFolder.Click
+
+        Dim fb = New FolderBrowserDialog()
+        fb.ShowDialog()
+        Dim f1 As FileInfo() = New DirectoryInfo(fb.SelectedPath).GetFiles("*.xci", SearchOption.AllDirectories)
+        Dim f2 As FileInfo() = New DirectoryInfo(fb.SelectedPath).GetFiles("*.xc0", SearchOption.AllDirectories)
+        Dim ff As FileInfo() = f1.Union(f2).ToArray()
+
+        Dim p As String()
+        ReDim Preserve p(ff.Length)
+
+        For i As Integer = 0 To ff.Length - 1
+            p(i) = ff(i).FullName()
+        Next
+
+        AddToList(p)
+
+    End Sub
 End Class
