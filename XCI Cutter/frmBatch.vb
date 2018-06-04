@@ -133,7 +133,7 @@ Public Class frmBatch
                         File.Delete(frmXCIcutter.CurrentFile.InPath.Substring(0, frmXCIcutter.CurrentFile.InPath.Length - 1) & n.ToString)
                     Next
                 End If
-        End If
+            End If
             'Mark last item as OK!
             lstFilelist.Items(CurrentIndex) = "OK!" & lstFilelist.Items(CurrentIndex).ToString.TrimStart("ACTIVE".ToCharArray)
         End If
@@ -242,18 +242,21 @@ Public Class frmBatch
 
         Dim fb = New FolderBrowserDialog()
         fb.ShowDialog()
-        Dim f1 As FileInfo() = New DirectoryInfo(fb.SelectedPath).GetFiles("*.xci", SearchOption.AllDirectories)
-        Dim f2 As FileInfo() = New DirectoryInfo(fb.SelectedPath).GetFiles("*.xc0", SearchOption.AllDirectories)
-        Dim ff As FileInfo() = f1.Union(f2).ToArray()
+        If String.IsNullOrEmpty(fb.SelectedPath) = False Then
 
-        Dim p As String()
-        ReDim Preserve p(ff.Length)
 
-        For i As Integer = 0 To ff.Length - 1
-            p(i) = ff(i).FullName()
-        Next
+            Dim f1 As FileInfo() = New DirectoryInfo(fb.SelectedPath).GetFiles("*.xci", SearchOption.AllDirectories)
+            Dim f2 As FileInfo() = New DirectoryInfo(fb.SelectedPath).GetFiles("*.xc0", SearchOption.AllDirectories)
+            Dim ff As FileInfo() = f1.Union(f2).ToArray()
 
-        AddToList(p)
+            Dim p As String()
+            ReDim Preserve p(ff.Length)
 
+            For i As Integer = 0 To ff.Length - 1
+                p(i) = ff(i).FullName()
+            Next
+
+            AddToList(p)
+        End If
     End Sub
 End Class
