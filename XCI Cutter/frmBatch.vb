@@ -259,4 +259,36 @@ Public Class frmBatch
             AddToList(p)
         End If
     End Sub
+
+    'DragEnter & DragDrop procedures to add files by Drag&Drop
+    Private Sub lstFilelist_DragEnter(sender As Object, e As DragEventArgs) Handles lstFilelist.DragEnter
+        If e.Data.GetDataPresent(DataFormats.FileDrop) Then e.Effect = DragDropEffects.Copy
+    End Sub
+
+    Private Sub lstFilelist_DragDrop(sender As Object, e As DragEventArgs) Handles lstFilelist.DragDrop
+        Dim DroppedFiles() As String = e.Data.GetData(DataFormats.FileDrop)
+        Dim FileBuffer As New List(Of String)
+
+        Try
+            For Each Entry As String In DroppedFiles
+                'If dropped item is a directory: scan recursive (copied from btnAddFolder_Click / thanks to getraid)
+                If Directory.Exists(Entry) Then
+                    Dim f1 As FileInfo() = New DirectoryInfo(Entry).GetFiles("*.xci", SearchOption.AllDirectories)
+                    Dim f2 As FileInfo() = New DirectoryInfo(Entry).GetFiles("*.xc0", SearchOption.AllDirectories)
+                    Dim ff As FileInfo() = f1.Union(f2).ToArray
+                    For i As Integer = 0 To ff.Length - 1
+                        FileBuffer.Add(ff(i).FullName)
+                    Next
+                    'if xci or xc0 file: just add
+                ElseIf Entry.EndsWith(".xci") OrElse Entry.EndsWith(".xc0") Then
+                    FileBuffer.Add(Entry)
+                End If
+            Next
+        Catch ex As Exception
+            MessageBox.Show(ex.Message)
+        End Try
+
+        AddToList(FileBuffer.ToArray)
+    End Sub
+
 End Class
