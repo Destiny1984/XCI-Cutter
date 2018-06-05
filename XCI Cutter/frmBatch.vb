@@ -28,7 +28,8 @@ Public Class frmBatch
 
     'Detect DEL-Key to remove items
     Private Sub lstFilelist_KeyDown(sender As Object, e As KeyEventArgs) Handles lstFilelist.KeyDown
-        If e.KeyCode = Keys.Delete Then
+        'only allow deletion of entries if currently no conversion in progress
+        If e.KeyCode = Keys.Delete AndAlso btnStartBatch.Text = "&Start" Then
             For i As Integer = lstFilelist.SelectedIndices.Count - 1 To 0 Step -1
                 lstFilelist.Items.RemoveAt(lstFilelist.SelectedIndices(i))
             Next
@@ -39,7 +40,8 @@ Public Class frmBatch
     Private Sub DrawItem(sender As Object, e As DrawItemEventArgs) Handles lstFilelist.DrawItem
         If lstFilelist.Items.Count > 0 Then
             e.DrawBackground()
-            If (e.State And DrawItemState.Selected) = DrawItemState.Selected Then
+            'only colorize selected item if currently no conversion in progress
+            If (e.State And DrawItemState.Selected) = DrawItemState.Selected AndAlso btnStartBatch.Text = "&Start" Then
                 e.Graphics.FillRectangle(Brushes.Yellow, e.Bounds)
             Else
                 If lstFilelist.Items(e.Index).ToString().StartsWith("OK!") Then
@@ -157,7 +159,7 @@ Public Class frmBatch
     Private Sub btnStartBatch_click() Handles btnStartBatch.Click
         'Start conversion
         If lstFilelist.Items.Count > 0 Then
-            If btnStartBatch.Text = "Start" Then
+            If btnStartBatch.Text = "&Start" Then
                 ToggleControls(False)
                 StartConversion()
             Else
@@ -180,16 +182,17 @@ Public Class frmBatch
 
     'Toggle controls
     Friend Sub ToggleControls(Trigger As Boolean)
-        lstFilelist.Enabled = Trigger
+        lstFilelist.SelectedIndex = -1
         btnAddFiles.Enabled = Trigger
+        btnAddFolder.Enabled = Trigger
         rdbCut.Enabled = Trigger
         rdbUncut.Enabled = Trigger
         chkSplit.Enabled = Trigger
         chkDelete.Enabled = Trigger
         If Trigger Then
-            btnStartBatch.Text = "Start"
+            btnStartBatch.Text = "&Start"
         Else
-            btnStartBatch.Text = "Cancel"
+            btnStartBatch.Text = "&Cancel"
         End If
     End Sub
 
@@ -219,7 +222,7 @@ Public Class frmBatch
 
     'Closing: Ask if conversion in progress
     Private Sub frmBatch_Closing(sender As Object, e As CancelEventArgs) Handles Me.Closing
-        If btnStartBatch.Text = "Cancel" Then
+        If btnStartBatch.Text = "&Cancel" Then
             If MessageBox.Show("Conversion in progress!" & vbCrLf & "Really Close?", "Warning!",
                                MessageBoxButtons.YesNo,
                                MessageBoxIcon.Exclamation,
