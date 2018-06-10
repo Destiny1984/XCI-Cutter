@@ -77,6 +77,13 @@ Public Class frmBatch
             Exit Sub
         End If
 
+        'skip split-files while using fast mode
+        If chkFastmode.Checked AndAlso lstFilelist.Items(CurrentIndex).ToString.EndsWith("0") Then
+            lstFilelist.Items(CurrentIndex) = "SKIP!" & vbTab & lstFilelist.Items(CurrentIndex)
+            StartNext(False)
+            Exit Sub
+        End If
+
         frmXCIcutter.CurrentFile = New XCIFile(lstFilelist.Items(CurrentIndex))
         'skip if inputfile is no valid xci-file (mark as error 35)
         If frmXCIcutter.CurrentFile.FileOK = False Then
@@ -101,12 +108,15 @@ Public Class frmBatch
                 End If
             End If
 
-            'set output: set file extension to xc0 if splitting was checked and we'll need more than one part
-            If frmXCIcutter.CurrentFile.ChunkCount > 1 AndAlso chkSplit.Checked Then
-                frmXCIcutter.CurrentFile.OutPath = lstFilelist.Items(CurrentIndex).ToString.Substring(0, lstFilelist.Items(CurrentIndex).ToString.Length - 4) & "-cut.xc0"
-            Else
-                frmXCIcutter.CurrentFile.OutPath = lstFilelist.Items(CurrentIndex).ToString.Substring(0, lstFilelist.Items(CurrentIndex).ToString.Length - 4) & "-cut.xci"
+            'set output (if not using fastmode): set file extension to xc0 if splitting was checked and we'll need more than one part
+            If Not chkFastmode.Checked Then
+                If frmXCIcutter.CurrentFile.ChunkCount > 1 AndAlso chkSplit.Checked Then
+                    frmXCIcutter.CurrentFile.OutPath = lstFilelist.Items(CurrentIndex).ToString.Substring(0, lstFilelist.Items(CurrentIndex).ToString.Length - 4) & "-cut.xc0"
+                Else
+                    frmXCIcutter.CurrentFile.OutPath = lstFilelist.Items(CurrentIndex).ToString.Substring(0, lstFilelist.Items(CurrentIndex).ToString.Length - 4) & "-cut.xci"
+                End If
             End If
+
         Else
             'Skip if file is already of full size
             If frmXCIcutter.CurrentFile.RealFileSize >= frmXCIcutter.CurrentFile.CartSize Then
@@ -114,11 +124,13 @@ Public Class frmBatch
                 StartNext(False)
                 Exit Sub
             End If
-            frmXCIcutter.CurrentFile.OutPath = lstFilelist.Items(CurrentIndex).ToString.Substring(0, lstFilelist.Items(CurrentIndex).ToString.Length - 4) & "-uncut.xci"
+            If Not chkFastmode.Checked Then
+                frmXCIcutter.CurrentFile.OutPath = lstFilelist.Items(CurrentIndex).ToString.Substring(0, lstFilelist.Items(CurrentIndex).ToString.Length - 4) & "-uncut.xci"
+            End If
         End If
         'mark current file and start
         lstFilelist.Items(CurrentIndex) = "ACTIVE" & vbTab & lstFilelist.Items(CurrentIndex)
-        frmXCIcutter.progressTimer.Start()
+        If Not chkFastmode.Checked Then frmXCIcutter.progressTimer.Start()
         frmXCIcutter.BackgroundWorker.RunWorkerAsync()
     End Sub
 
@@ -187,8 +199,11 @@ Public Class frmBatch
         btnAddFolder.Enabled = Trigger
         rdbCut.Enabled = Trigger
         rdbUncut.Enabled = Trigger
-        chkSplit.Enabled = Trigger
-        chkDelete.Enabled = Trigger
+        chkFastmode.Enabled = Trigger
+        If Not chkFastmode.Checked Then
+            chkSplit.Enabled = Trigger
+            chkDelete.Enabled = Trigger
+        End If
         If Trigger Then
             btnStartBatch.Text = "&Start"
         Else
@@ -201,7 +216,7 @@ Public Class frmBatch
     Private Sub rdbUncut_CheckedChanged(sender As Object, e As EventArgs) Handles rdbUncut.CheckedChanged, rdbCut.CheckedChanged
         frmXCIcutter.rdbCut.Checked = rdbCut.Checked
         frmXCIcutter.rdbUncut.Checked = rdbUncut.Checked
-        If rdbCut.Checked Then
+        If rdbCut.Checked AndAlso Not chkFastmode.Checked Then
             chkSplit.Enabled = True
         Else
             'The split-checkbox is always ignored in mode uncut/join
@@ -267,7 +282,6 @@ Public Class frmBatch
     Private Sub lstFilelist_DragEnter(sender As Object, e As DragEventArgs) Handles lstFilelist.DragEnter
         If e.Data.GetDataPresent(DataFormats.FileDrop) Then e.Effect = DragDropEffects.Copy
     End Sub
-
     Private Sub lstFilelist_DragDrop(sender As Object, e As DragEventArgs) Handles lstFilelist.DragDrop
         Dim DroppedFiles() As String = e.Data.GetData(DataFormats.FileDrop)
         Dim FileBuffer As New List(Of String)
@@ -292,6 +306,24 @@ Public Class frmBatch
         End Try
 
         AddToList(FileBuffer.ToArray)
+    End Sub
+
+    'Fastmode checkbox: Show warning and toggle splitting and input deletion
+    Private Sub chkFastmode_CheckedChanged(sender As Object, e As EventArgs) Handles chkFastmode.CheckedChanged
+        If chkFastmode.Checked = True Then
+            MessageBox.Show("The fastmode disables all safetychecks and" & vbCrLf &
+                            "processes the inputfiles directly." & vbCrLf & vbCrLf &
+                            "You might irreversible break your inputfiles" & vbCrLf & "if something goes wrong!" &
+                            vbCrLf & vbCrLf & vbCrLf & "NOTE: Fastmode can't handle split-files.",
+                            "Warning!", MessageBoxButtons.OK, MessageBoxIcon.Exclamation)
+            chkDelete.Checked = False
+            chkDelete.Enabled = False
+            chkSplit.Checked = False
+            chkSplit.Enabled = False
+        Else
+            chkDelete.Enabled = True
+            chkSplit.Enabled = True
+        End If
     End Sub
 
 End Class

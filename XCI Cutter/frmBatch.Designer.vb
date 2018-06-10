@@ -27,6 +27,7 @@ Partial Class frmBatch
         Me.lstFilelist = New System.Windows.Forms.ListBox()
         Me.btnAddFolder = New System.Windows.Forms.Button()
         Me.pnlSettings = New System.Windows.Forms.Panel()
+        Me.chkFastmode = New System.Windows.Forms.CheckBox()
         Me.lblSettings = New System.Windows.Forms.Label()
         Me.rdbUncut = New System.Windows.Forms.RadioButton()
         Me.chkDelete = New System.Windows.Forms.CheckBox()
@@ -35,9 +36,9 @@ Partial Class frmBatch
         Me.lblTotal = New System.Windows.Forms.Label()
         Me.lblCurrent = New System.Windows.Forms.Label()
         Me.prgTotal = New System.Windows.Forms.ProgressBar()
+        Me.btnStartBatch = New System.Windows.Forms.Button()
         Me.prgCurrent = New System.Windows.Forms.ProgressBar()
         Me.btnAddFiles = New System.Windows.Forms.Button()
-        Me.btnStartBatch = New System.Windows.Forms.Button()
         CType(Me.SplitContainer1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SplitContainer1.Panel1.SuspendLayout()
         Me.SplitContainer1.Panel2.SuspendLayout()
@@ -69,8 +70,8 @@ Partial Class frmBatch
         Me.SplitContainer1.Panel2.Controls.Add(Me.prgCurrent)
         Me.SplitContainer1.Panel2.Controls.Add(Me.btnAddFiles)
         Me.SplitContainer1.Panel2MinSize = 100
-        Me.SplitContainer1.Size = New System.Drawing.Size(496, 698)
-        Me.SplitContainer1.SplitterDistance = 523
+        Me.SplitContainer1.Size = New System.Drawing.Size(496, 706)
+        Me.SplitContainer1.SplitterDistance = 524
         Me.SplitContainer1.SplitterWidth = 1
         Me.SplitContainer1.TabIndex = 1
         '
@@ -85,12 +86,12 @@ Partial Class frmBatch
         Me.lstFilelist.Location = New System.Drawing.Point(0, 0)
         Me.lstFilelist.Name = "lstFilelist"
         Me.lstFilelist.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended
-        Me.lstFilelist.Size = New System.Drawing.Size(496, 523)
+        Me.lstFilelist.Size = New System.Drawing.Size(496, 524)
         Me.lstFilelist.TabIndex = 0
         '
         'btnAddFolder
         '
-        Me.btnAddFolder.Location = New System.Drawing.Point(3, 43)
+        Me.btnAddFolder.Location = New System.Drawing.Point(2, 53)
         Me.btnAddFolder.Name = "btnAddFolder"
         Me.btnAddFolder.Size = New System.Drawing.Size(125, 32)
         Me.btnAddFolder.TabIndex = 19
@@ -100,22 +101,33 @@ Partial Class frmBatch
         'pnlSettings
         '
         Me.pnlSettings.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.pnlSettings.Controls.Add(Me.chkFastmode)
         Me.pnlSettings.Controls.Add(Me.lblSettings)
         Me.pnlSettings.Controls.Add(Me.rdbUncut)
         Me.pnlSettings.Controls.Add(Me.chkDelete)
         Me.pnlSettings.Controls.Add(Me.rdbCut)
         Me.pnlSettings.Controls.Add(Me.chkSplit)
-        Me.pnlSettings.Location = New System.Drawing.Point(220, 3)
+        Me.pnlSettings.Location = New System.Drawing.Point(219, 4)
         Me.pnlSettings.Margin = New System.Windows.Forms.Padding(2)
         Me.pnlSettings.Name = "pnlSettings"
-        Me.pnlSettings.Size = New System.Drawing.Size(273, 72)
+        Me.pnlSettings.Size = New System.Drawing.Size(273, 81)
         Me.pnlSettings.TabIndex = 18
+        '
+        'chkFastmode
+        '
+        Me.chkFastmode.AutoSize = True
+        Me.chkFastmode.Location = New System.Drawing.Point(62, 56)
+        Me.chkFastmode.Name = "chkFastmode"
+        Me.chkFastmode.Size = New System.Drawing.Size(184, 17)
+        Me.chkFastmode.TabIndex = 20
+        Me.chkFastmode.Text = "Fast mode (potentially dangerous)"
+        Me.chkFastmode.UseVisualStyleBackColor = True
         '
         'lblSettings
         '
         Me.lblSettings.AutoSize = True
         Me.lblSettings.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblSettings.Location = New System.Drawing.Point(13, 12)
+        Me.lblSettings.Location = New System.Drawing.Point(13, 8)
         Me.lblSettings.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.lblSettings.Name = "lblSettings"
         Me.lblSettings.Size = New System.Drawing.Size(42, 13)
@@ -125,7 +137,7 @@ Partial Class frmBatch
         'rdbUncut
         '
         Me.rdbUncut.AutoSize = True
-        Me.rdbUncut.Location = New System.Drawing.Point(155, 10)
+        Me.rdbUncut.Location = New System.Drawing.Point(155, 6)
         Me.rdbUncut.Name = "rdbUncut"
         Me.rdbUncut.Size = New System.Drawing.Size(84, 17)
         Me.rdbUncut.TabIndex = 17
@@ -135,7 +147,7 @@ Partial Class frmBatch
         'chkDelete
         '
         Me.chkDelete.AutoSize = True
-        Me.chkDelete.Location = New System.Drawing.Point(155, 42)
+        Me.chkDelete.Location = New System.Drawing.Point(155, 31)
         Me.chkDelete.Name = "chkDelete"
         Me.chkDelete.Size = New System.Drawing.Size(113, 17)
         Me.chkDelete.TabIndex = 1
@@ -146,7 +158,7 @@ Partial Class frmBatch
         '
         Me.rdbCut.AutoSize = True
         Me.rdbCut.Checked = True
-        Me.rdbCut.Location = New System.Drawing.Point(62, 10)
+        Me.rdbCut.Location = New System.Drawing.Point(62, 6)
         Me.rdbCut.Name = "rdbCut"
         Me.rdbCut.Size = New System.Drawing.Size(72, 17)
         Me.rdbCut.TabIndex = 16
@@ -157,7 +169,7 @@ Partial Class frmBatch
         'chkSplit
         '
         Me.chkSplit.AutoSize = True
-        Me.chkSplit.Location = New System.Drawing.Point(62, 41)
+        Me.chkSplit.Location = New System.Drawing.Point(62, 30)
         Me.chkSplit.Margin = New System.Windows.Forms.Padding(2)
         Me.chkSplit.Name = "chkSplit"
         Me.chkSplit.Size = New System.Drawing.Size(85, 17)
@@ -169,7 +181,7 @@ Partial Class frmBatch
         '
         Me.lblTotal.AutoSize = True
         Me.lblTotal.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblTotal.Location = New System.Drawing.Point(7, 127)
+        Me.lblTotal.Location = New System.Drawing.Point(6, 133)
         Me.lblTotal.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.lblTotal.Name = "lblTotal"
         Me.lblTotal.Size = New System.Drawing.Size(0, 13)
@@ -179,7 +191,7 @@ Partial Class frmBatch
         '
         Me.lblCurrent.AutoSize = True
         Me.lblCurrent.Font = New System.Drawing.Font("Microsoft Sans Serif", 7.8!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.lblCurrent.Location = New System.Drawing.Point(7, 82)
+        Me.lblCurrent.Location = New System.Drawing.Point(6, 88)
         Me.lblCurrent.Margin = New System.Windows.Forms.Padding(2, 0, 2, 0)
         Me.lblCurrent.Name = "lblCurrent"
         Me.lblCurrent.Size = New System.Drawing.Size(0, 13)
@@ -187,41 +199,41 @@ Partial Class frmBatch
         '
         'prgTotal
         '
-        Me.prgTotal.Location = New System.Drawing.Point(4, 145)
+        Me.prgTotal.Location = New System.Drawing.Point(3, 151)
         Me.prgTotal.Name = "prgTotal"
         Me.prgTotal.Size = New System.Drawing.Size(490, 23)
         Me.prgTotal.TabIndex = 1
         '
+        'btnStartBatch
+        '
+        Me.btnStartBatch.Location = New System.Drawing.Point(133, 4)
+        Me.btnStartBatch.Name = "btnStartBatch"
+        Me.btnStartBatch.Size = New System.Drawing.Size(81, 81)
+        Me.btnStartBatch.TabIndex = 1
+        Me.btnStartBatch.Text = "&Start"
+        Me.btnStartBatch.UseVisualStyleBackColor = True
+        '
         'prgCurrent
         '
-        Me.prgCurrent.Location = New System.Drawing.Point(4, 99)
+        Me.prgCurrent.Location = New System.Drawing.Point(3, 105)
         Me.prgCurrent.Name = "prgCurrent"
         Me.prgCurrent.Size = New System.Drawing.Size(490, 23)
         Me.prgCurrent.TabIndex = 3
         '
         'btnAddFiles
         '
-        Me.btnAddFiles.Location = New System.Drawing.Point(3, 3)
+        Me.btnAddFiles.Location = New System.Drawing.Point(2, 4)
         Me.btnAddFiles.Name = "btnAddFiles"
         Me.btnAddFiles.Size = New System.Drawing.Size(125, 32)
         Me.btnAddFiles.TabIndex = 2
         Me.btnAddFiles.Text = "Add file(s)"
         Me.btnAddFiles.UseVisualStyleBackColor = True
         '
-        'btnStartBatch
-        '
-        Me.btnStartBatch.Location = New System.Drawing.Point(134, 3)
-        Me.btnStartBatch.Name = "btnStartBatch"
-        Me.btnStartBatch.Size = New System.Drawing.Size(81, 72)
-        Me.btnStartBatch.TabIndex = 1
-        Me.btnStartBatch.Text = "&Start"
-        Me.btnStartBatch.UseVisualStyleBackColor = True
-        '
         'frmBatch
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-        Me.ClientSize = New System.Drawing.Size(496, 698)
+        Me.ClientSize = New System.Drawing.Size(496, 706)
         Me.Controls.Add(Me.SplitContainer1)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
@@ -255,4 +267,5 @@ Partial Class frmBatch
     Friend WithEvents pnlSettings As Panel
     Friend WithEvents lblSettings As Label
     Friend WithEvents btnAddFolder As Button
+    Friend WithEvents chkFastmode As CheckBox
 End Class

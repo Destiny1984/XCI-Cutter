@@ -129,83 +129,80 @@ Public Class frmXCIcutter
 
     'Backgoundworker: All reading/writing happens here
     Private Sub BackgroundWorker_DoWork(sender As Object, e As DoWorkEventArgs) Handles BackgroundWorker.DoWork
-        CurrentFile.OpenReaders()
         BackgroundWorker.WorkerSupportsCancellation = True
         ProgressBar.Value = 0
-        If Not IsNothing(BatchForm) Then BatchForm.prgCurrent.Value = ProgressBar.Value
-        'Cut / Split
-        If rdbCut.Checked = True Then
-            'jump to DataSíze
-            CurrentFile.InPos = CurrentFile.DataSize
-            'check sectors after DataSize
-            BackgroundWorker.ReportProgress(1)
-            Try
-                For i As UInt64 = CurrentFile.DataSize To CurrentFile.RealFileSize - 1
-                    If BackgroundWorker.CancellationPending = False Then
-                        If CurrentFile.br.ReadByte <> 255 Then
-                            e.Cancel = True
-                            If IsNothing(BatchForm) Then
-                                MessageBox.Show("Found used space after gamedata! Aborting!", "Warning!")
-                            Else
-                                If Not IsNothing(BatchForm) Then BackgroundWorker.ReportProgress(30)
+
+        'cut/uncut for fastmode
+        If Not IsNothing(BatchForm) AndAlso BatchForm.chkFastmode.Checked Then
+            Dim fs As New FileStream(CurrentFile.InPath, FileMode.Open, FileAccess.Write)
+            If rdbCut.Checked = True Then
+                Try
+                    fs.SetLength(CurrentFile.DataSize)
+                Catch ex As Exception
+                    BackgroundWorker.ReportProgress(36)
+                End Try
+            Else
+                BackgroundWorker.ReportProgress(3)
+                Try
+                    Dim bw As New BinaryWriter(fs)
+                    fs.Position = CurrentFile.DataSize
+                    For i As UInt64 = CurrentFile.DataSize + 1 To CurrentFile.CartSize
+                        bw.Write(CByte(255))
+                    Next
+                Catch ex As Exception
+                    BackgroundWorker.ReportProgress(37)
+                End Try
+            End If
+        Else
+
+            CurrentFile.OpenReaders()
+            If Not IsNothing(BatchForm) Then BatchForm.prgCurrent.Value = ProgressBar.Value
+            'Cut / Split
+            If rdbCut.Checked = True Then
+                'jump to DataSíze
+                CurrentFile.InPos = CurrentFile.DataSize
+                'check sectors after DataSize
+                BackgroundWorker.ReportProgress(1)
+                Try
+                    For i As UInt64 = CurrentFile.DataSize To CurrentFile.RealFileSize - 1
+                        If BackgroundWorker.CancellationPending = False Then
+                            If CurrentFile.br.ReadByte <> 255 Then
+                                e.Cancel = True
+                                If IsNothing(BatchForm) Then
+                                    MessageBox.Show("Found used space after gamedata! Aborting!", "Warning!")
+                                Else
+                                    If Not IsNothing(BatchForm) Then BackgroundWorker.ReportProgress(30)
+                                End If
+                                Exit Sub
                             End If
+                        Else
+                            e.Cancel = True
                             Exit Sub
                         End If
-                    Else
-                        e.Cancel = True
-                        Exit Sub
-                    End If
-                Next
-            Catch ex As Exception
-                BackgroundWorker.ReportProgress(31)
-            End Try
-            CurrentFile.InPos = 0
-            Dim NextOffset, LastOffset As UInt64
-            Try
-                For n As Byte = 0 To CurrentFile.ChunkCount - 1
-                    LastOffset = NextOffset + 1
-                    'Set Offset/filename/status whether we want splitting or not
-                    If chkSplit.Checked AndAlso CurrentFile.ChunkCount > 1 Then
-                        If CurrentFile.DataSize > NextOffset + CurrentFile.ChunkSize Then
-                            NextOffset = (n + 1) * CurrentFile.ChunkSize
+                    Next
+                Catch ex As Exception
+                    BackgroundWorker.ReportProgress(31)
+                End Try
+                CurrentFile.InPos = 0
+                Dim NextOffset, LastOffset As UInt64
+                Try
+                    For n As Byte = 0 To CurrentFile.ChunkCount - 1
+                        LastOffset = NextOffset + 1
+                        'Set Offset/filename/status whether we want splitting or not
+                        If chkSplit.Checked AndAlso CurrentFile.ChunkCount > 1 Then
+                            If CurrentFile.DataSize > NextOffset + CurrentFile.ChunkSize Then
+                                NextOffset = (n + 1) * CurrentFile.ChunkSize
+                            Else
+                                NextOffset = CurrentFile.DataSize
+                            End If
+                            BackgroundWorker.ReportProgress(n + 11)
+                            'set filename for next chunk
+                            If n > 0 Then CurrentFile.OutPath = CurrentFile.OutPath.TrimEnd((n - 1).ToString) & n.ToString
                         Else
                             NextOffset = CurrentFile.DataSize
+                            BackgroundWorker.ReportProgress(2)
                         End If
-                        BackgroundWorker.ReportProgress(n + 11)
-                        'set filename for next chunk
-                        If n > 0 Then CurrentFile.OutPath = CurrentFile.OutPath.TrimEnd((n - 1).ToString) & n.ToString
-                    Else
-                        NextOffset = CurrentFile.DataSize
-                        BackgroundWorker.ReportProgress(2)
-                    End If
-                    For i As UInt64 = LastOffset To NextOffset
-                        If BackgroundWorker.CancellationPending = False Then
-                            CurrentFile.bw.Write(CurrentFile.br.ReadByte)
-                        Else
-                            e.Cancel = True
-                            Exit Sub
-                        End If
-                    Next
-                    If CurrentFile.InPos = CurrentFile.DataSize Then Exit For
-                Next
-            Catch ex As Exception
-                BackgroundWorker.ReportProgress(32)
-            End Try
-        End If
-
-        'Uncut / Join
-        If rdbUncut.Checked = True Then
-            BackgroundWorker.ReportProgress(2)
-            Try
-                If CurrentFile.InPath.EndsWith(".xci", StringComparison.CurrentCultureIgnoreCase) Then
-                    For i As UInt64 = 1 To CurrentFile.DataSize
-                        CurrentFile.bw.Write(CurrentFile.br.ReadByte)
-                    Next
-                ElseIf CurrentFile.InPath.EndsWith(".xc0", StringComparison.CurrentCultureIgnoreCase) Then
-                    Dim NextOffset As UInt64 = CurrentFile.ChunkSize
-                    Dim LastOffset As UInt64 = 0
-                    For n As Byte = 1 To CurrentFile.ChunkCount
-                        For i As UInt64 = LastOffset + 1 To NextOffset
+                        For i As UInt64 = LastOffset To NextOffset
                             If BackgroundWorker.CancellationPending = False Then
                                 CurrentFile.bw.Write(CurrentFile.br.ReadByte)
                             Else
@@ -213,31 +210,59 @@ Public Class frmXCIcutter
                                 Exit Sub
                             End If
                         Next
-                        LastOffset = NextOffset
-                        If CurrentFile.DataSize > NextOffset + CurrentFile.ChunkSize Then
-                            NextOffset = (n + 1) * CurrentFile.ChunkSize
-                        Else
-                            NextOffset = CurrentFile.DataSize
-                        End If
-                        If n < CurrentFile.ChunkCount Then CurrentFile.InPath = CurrentFile.InPath.TrimEnd((n - 1).ToString) & n.ToString
+                        If CurrentFile.InPos = CurrentFile.DataSize Then Exit For
                     Next
-                End If
-            Catch ex As Exception
-                BackgroundWorker.ReportProgress(33)
-            End Try
-            BackgroundWorker.ReportProgress(3)
-            Try
-                For i As UInt64 = CurrentFile.DataSize + 1 To CurrentFile.CartSize
-                    If BackgroundWorker.CancellationPending = False Then
-                        CurrentFile.bw.Write(CByte(255))
-                    Else
-                        e.Cancel = True
-                        Exit Sub
+                Catch ex As Exception
+                    BackgroundWorker.ReportProgress(32)
+                End Try
+            End If
+
+            'Uncut / Join
+            If rdbUncut.Checked = True Then
+                BackgroundWorker.ReportProgress(2)
+                Try
+                    If CurrentFile.InPath.EndsWith(".xci", StringComparison.CurrentCultureIgnoreCase) Then
+                        For i As UInt64 = 1 To CurrentFile.DataSize
+                            CurrentFile.bw.Write(CurrentFile.br.ReadByte)
+                        Next
+                    ElseIf CurrentFile.InPath.EndsWith(".xc0", StringComparison.CurrentCultureIgnoreCase) Then
+                        Dim NextOffset As UInt64 = CurrentFile.ChunkSize
+                        Dim LastOffset As UInt64 = 0
+                        For n As Byte = 1 To CurrentFile.ChunkCount
+                            For i As UInt64 = LastOffset + 1 To NextOffset
+                                If BackgroundWorker.CancellationPending = False Then
+                                    CurrentFile.bw.Write(CurrentFile.br.ReadByte)
+                                Else
+                                    e.Cancel = True
+                                    Exit Sub
+                                End If
+                            Next
+                            LastOffset = NextOffset
+                            If CurrentFile.DataSize > NextOffset + CurrentFile.ChunkSize Then
+                                NextOffset = (n + 1) * CurrentFile.ChunkSize
+                            Else
+                                NextOffset = CurrentFile.DataSize
+                            End If
+                            If n < CurrentFile.ChunkCount Then CurrentFile.InPath = CurrentFile.InPath.TrimEnd((n - 1).ToString) & n.ToString
+                        Next
                     End If
-                Next
-            Catch ex As Exception
-                BackgroundWorker.ReportProgress(34)
-            End Try
+                Catch ex As Exception
+                    BackgroundWorker.ReportProgress(33)
+                End Try
+                BackgroundWorker.ReportProgress(3)
+                Try
+                    For i As UInt64 = CurrentFile.DataSize + 1 To CurrentFile.CartSize
+                        If BackgroundWorker.CancellationPending = False Then
+                            CurrentFile.bw.Write(CByte(255))
+                        Else
+                            e.Cancel = True
+                            Exit Sub
+                        End If
+                    Next
+                Catch ex As Exception
+                    BackgroundWorker.ReportProgress(34)
+                End Try
+            End If
         End If
     End Sub
 
@@ -276,6 +301,8 @@ Public Class frmXCIcutter
                 '32: Error while writing gamedata (Cut-Mode)
                 '33: Error while writing gamedata (Uncut-Mode)
                 '34: Error while restoring unused sectors
+                '36: Error while setting new end of file (Fastmode)
+                '37: Error while appending FF sectors (Fastmode)
                 If Not IsNothing(BatchForm) Then BatchForm.lstFilelist.Items(BatchForm.CurrentIndex) = "ERR" & e.ProgressPercentage & BatchForm.lstFilelist.Items(BatchForm.CurrentIndex).ToString.TrimStart("ACTIVE".ToCharArray)
                 If Not IsNothing(BatchForm) Then BatchForm.StartNext(False)
         End Select
@@ -391,8 +418,6 @@ Friend Class XCIFile
         End Get
         Set(value As String)
             pOutPath = value
-            OutfileStream = New FileStream(pOutPath, FileMode.Create, FileAccess.Write, FileShare.Write)
-            bw = New BinaryWriter(OutfileStream)
         End Set
     End Property
     Public Property InPath As String
@@ -401,8 +426,6 @@ Friend Class XCIFile
         End Get
         Set(value As String)
             pInPath = value
-            InfileStream = New FileStream(pInPath, FileMode.Open, FileAccess.Read, FileShare.Read)
-            br = New BinaryReader(InfileStream)
         End Set
     End Property
     Public Property InPos As UInt64
