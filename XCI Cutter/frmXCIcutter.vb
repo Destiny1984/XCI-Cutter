@@ -418,6 +418,8 @@ Friend Class XCIFile
         End Get
         Set(value As String)
             pOutPath = value
+            OutfileStream = New FileStream(pOutPath, FileMode.Create, FileAccess.Write, FileShare.Write)
+            bw = New BinaryWriter(OutfileStream)
         End Set
     End Property
     Public Property InPath As String
@@ -426,6 +428,8 @@ Friend Class XCIFile
         End Get
         Set(value As String)
             pInPath = value
+            InfileStream = New FileStream(pInPath, FileMode.Open, FileAccess.Read, FileShare.Read)
+            br = New BinaryReader(InfileStream)
         End Set
     End Property
     Public Property InPos As UInt64
