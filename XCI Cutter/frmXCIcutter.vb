@@ -402,7 +402,7 @@ Friend Class XCIFile
     Private pDataSize, pCartSize, pRealfileSize As UInt64
     Private pInPath, pOutPath As String
     Private pFileOK As Boolean = True
-    Friend ReadOnly ChunkSize As UInt32 = 4 * 1024 ^ 3 - 1
+    Friend ReadOnly ChunkSize As UInt32 = 2 ^ 32 - 32 * 1024
     Private pChunkCount As Byte
     Friend br As BinaryReader
     Friend bw As BinaryWriter

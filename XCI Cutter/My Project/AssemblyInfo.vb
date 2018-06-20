@@ -12,7 +12,7 @@ Imports System.Runtime.InteropServices
 <Assembly: AssemblyDescription("")>
 <Assembly: AssemblyCompany("")>
 <Assembly: AssemblyProduct("XCI Cutter")>
-<Assembly: AssemblyCopyright("MHDestination for GBAtemp ©  2018")>
+<Assembly: AssemblyCopyright("Destiny1984 ©  2018")>
 <Assembly: AssemblyTrademark("")>
 
 <Assembly: ComVisible(False)>
@@ -31,5 +31,5 @@ Imports System.Runtime.InteropServices
 ' übernehmen, indem Sie "*" eingeben:
 ' <Assembly: AssemblyVersion("2.0.*")> 
 
-<Assembly: AssemblyVersion("2.4.0.0")>
-<Assembly: AssemblyFileVersion("2.4.0.0")>
+<Assembly: AssemblyVersion("2.4.2.0")>
+<Assembly: AssemblyFileVersion("2.4.2.0")>
